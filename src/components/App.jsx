@@ -1,88 +1,57 @@
-import { Component } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
-import { ThreeCircles } from 'react-loader-spinner';
-import { ToastContainer } from 'react-toastify';
 
-
-import Button from './Button/Button'
-import FetchImages from './GalleryApi/GalleryApy'
-import SearchBar from './Searchbare/Serchbar'
-import ImageGallery from './ImageGallery/ImageGallery'
-
-
+import React, { Component } from 'react';
+import Feedback from './Feedback/Feedback';
+import { Section } from './Section/Section';
+import Statistics from './Statistics/Statistics';
 
 
 export class App extends Component {
   state = {
-    page: 1,
-    input: '',
-    date: [],
-    loading: false,
+    good: 0,
+    neutral: 0,
+    bad: 0,
   };
 
-  componentDidUpdate(_, prevState) {
-    const { input, page } = this.state;
+  onFeedbackStateChange = evt => {
+    const { name } = evt.target;
+    this.setState(prevState => {
+      return {
+        [name]: prevState[name] + 1,
+      };
+    });
+  };
 
-    if (prevState.input !== input || page !== prevState.page) {
-      this.setState({ loading: true });
+  countTotalFeedback = () => {
+    return Object.values(this.state).reduce((acc, value) => acc + value, 0);
+  };
 
-      FetchImages(page, input)
-        .then(imgArr => {
-          if (input !== prevState.input) this.setState({ data: imgArr.hits, loading: false });
-          else
-            this.setState(prevState => {
-              return {
-                data: [...prevState.data, ...imgArr.hits], loading: false,
-              };
-            });
-        })
-        .catch(error => { console.log(error); this.setState({ loading: false }) })
-       
-      return;
-    }
-  }
-  
-  onSubmit = input => {
-    this.setState({
-      input,
-      page: 1,  
-  })
-  }
-  
-  onClick = e => {
-    if (e) {
-      this.setState(prevState => {
-        return {
-          page: prevState.page + 1,
-        }
-      })
-    }
-  }
-
+  countPositiveFeedbackPercentage = () => {
+    const percent = (this.state.good / this.countTotalFeedback()) * 100;
+    return Number.isNaN(percent) ? 0 : Math.round(percent);
+  };
 
   render() {
-    const { data, loading, input } = this.state;
-  return (
-    <>
-      <SearchBar onSub={this.onSubmit} />
-      {loading && (
-          <ThreeCircles
-            height="100"
-            width="100"
-            color="#2732ac"
-            wrapperStyle={{}}
-            wrapperClass="loader"
-            visible={true}
-            ariaLabel="three-circles-rotating"
-            outerCircleColor=""
-            innerCircleColor=""
-            middleCircleColor=""
+    const { good, neutral, bad } = this.state;
+    return (
+      <>
+        <Section title="Please leave your feedback">
+          <Feedback
+            options={Object.keys(this.state)}
+            onLeaveFeedback={this.onFeedbackStateChange}
           />
-       )} 
-      {data && <ImageGallery inputData={data} />}      
-      {input && !loading && <Button handleClick={this.onClick} />}
-    <ToastContainer/>
-    </>
+        </Section>
+        <Section title="Statistics">
+          <Statistics
+            message="There is no feedback"
+            good={good}
+            neutral={neutral}
+            bad={bad}
+            total={this.countTotalFeedback()}
+            percentage={this.countPositiveFeedbackPercentage()}
+          />
+        </Section>
+      </>
     );
-    }
-};
+  }
+}
+
