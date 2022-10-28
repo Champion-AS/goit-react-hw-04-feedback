@@ -23,10 +23,10 @@ export default function Statistics({ message, good, bad, neutral, total, percent
 }
 
 Statistics.propTypes = {
-    total: PropTypes.func,
-    percentage: PropTypes.func,
+    total: PropTypes.number,
+    percentage: PropTypes.number,
     message: PropTypes.string.isRequired,
-    good: PropTypes.string.isRequired,
-    bad: PropTypes.string.isRequired,
-    neutral: PropTypes.string.isRequired,
+    good: PropTypes.number.isRequired,
+    bad: PropTypes.number.isRequired,
+    neutral: PropTypes.number.isRequired,
 }
